@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.shell.standard.ShellComponent;
@@ -119,16 +120,21 @@ public class SOChatAgentEmbabel {
 	
 	@ShellMethod
     public String answer(String userQuestion) {
+        var prompt =
+                """
+                You are assisting a development team with questions on their specific development environment.
+                For this you have a graph which is an export from Stack Overflow for teams. It has posts and comments on those posts.
+                The original post is usually a question, and the other posts are answers on that question.
+                Use tools to get answers from the graph.
+                All posts and comments has a link to the user that posted them. The question is:
+                """ + userQuestion;
+        LoggerFactory.getLogger(getClass()).info("Answer prompt:\n{}", prompt);
         return ai
-                .withLlm(LlmOptions.withDefaultLlm().withTemperature(.8))
+                // TODO: Not sure the temperature should be this high, could just not
+                // set it and use the default
+                .withLlm(LlmOptions.withDefaultLlm().withTemperature(null))
                 .withToolObject(this)
-                .generateText(
-                		"""
-                		You are assisting a development team with questions on their specific development environment.
-                		For this you have a graph which is an export from Stack Overflow for teams. It has posts and comments on those posts.
-                		The original post is usually a question, and the other posts are answers on that question.
-                		All posts and comments has a link to the user that posted them. The question is:
-                		""" + userQuestion
-                		);
+                .generateText(prompt);
+
     }
 }
