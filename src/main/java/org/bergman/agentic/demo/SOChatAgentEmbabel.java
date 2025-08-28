@@ -1,10 +1,9 @@
 package org.bergman.agentic.demo;
 
-import com.embabel.agent.api.common.Ai;
+import com.embabel.agent.api.common.AiBuilder;
 import com.embabel.chat.AssistantMessage;
 import com.embabel.chat.Conversation;
 import com.embabel.common.ai.model.LlmOptions;
-import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
@@ -19,11 +18,11 @@ import java.util.Map;
 @Service
 public class SOChatAgentEmbabel {
     private final Neo4jConnection neo4j;
-    private final Ai ai;
+    private final AiBuilder aiBuilder;
 
-    protected SOChatAgentEmbabel(Neo4jConnection neo4j, Ai ai) {
+    protected SOChatAgentEmbabel(Neo4jConnection neo4j, AiBuilder aiBuilder) {
         this.neo4j = neo4j;
-        this.ai = ai;
+        this.aiBuilder = aiBuilder;
     }
 
     @Tool(description =
@@ -119,9 +118,9 @@ public class SOChatAgentEmbabel {
     }
 
     public AssistantMessage respond(Conversation conversation) {
-        LoggerFactory.getLogger(SOChatAgentEmbabel.class).info(
-                "Responding in conversation: {}", conversation.infoString(true, 0));
-        return ai
+        return aiBuilder
+                .withShowPrompts(true)
+                .ai()
                 // TODO: Not sure the temperature should be 0.8, could just not
                 // set it and use the default. Setting to null is the same as default
                 .withLlm(LlmOptions.withDefaultLlm().withTemperature(null))
